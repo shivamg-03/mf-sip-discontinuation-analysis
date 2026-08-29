@@ -35,8 +35,10 @@ Key columns: `investor_id`, `month_date`, `scheme_code`, `scheme_name`, `sebi_ca
 ---
 
 ## Pipeline
-Excel → MySQL (8 advanced SQL queries) → Python EDA (5 charts) → Statistical Validation (3 hypothesis tests) → Power BI (2-page dashboard)
 
+```
+Excel  →  MySQL (8 advanced SQL queries)  →  Python EDA (5 charts)  →  Statistical Validation (3 hypothesis tests)  →  Power BI (2-page dashboard)
+```
 
 ---
 
@@ -220,41 +222,42 @@ Excel · MySQL · Python (Pandas, Matplotlib, SciPy, SQLAlchemy) · Power BI (DA
 
 ## Repository Structure
 
+```
 mf-sip-discontinuation-analysis/
 ├── README.md
 ├── sql/
-│ └── mf_sip_analysis.sql (8 queries, Q1–Q8)
+│   └── mf_sip_analysis.sql            (8 queries, Q1–Q8)
 ├── notebook/
-│ └── mf_sip_discontinuation_eda.ipynb (EDA + Phase 5 statistical validation)
+│   └── mf_sip_discontinuation_eda.ipynb   (EDA + Phase 5 statistical validation)
 ├── data/
-│ ├── mf_sip_discontinuation.csv (raw)
-│ └── mf_sip_clean_v2.csv (cleaned)
+│   ├── mf_sip_discontinuation.csv     (raw)
+│   └── mf_sip_clean_v2.csv            (cleaned)
 ├── dashboard/
-│ ├── mf_analysis_dash.pbix
-│ └── mf_analysis_dash_pdf.pdf
+│   ├── mf_analysis_dash.pbix
+│   └── mf_analysis_dash_pdf.pdf
 └── screenshots/
-├── P1_02a_countifs_formula.png
-├── P1_02b_countifs_summary.png
-├── P1_04_avg_tenure_by_category.png
-├── P1_06_pivot_citytier_churn.png
-├── P1_07_pivot_sipband_churn.png
-├── P2_Q1_streak_detection_result.png
-├── P2_Q2_rank_by_category_result.png
-├── P2_Q3_risk_quartile_result.png
-├── P2_Q4_running_reliability_result.png
-├── P2_Q5_early_warning_result.png
-├── P2_Q6_scheme_discontinuation_rank.png
-├── P2_Q7_tenure_deviation_result.png
-├── P2_Q8_cohort_retention_curve.png
-├── P3_01_churn_by_category_chart.png
-├── P3_01_churn_by_category_table.png
-├── P3_02_tenure_to_churn_histogram.png
-├── P3_03_ticket_size_vs_churn.png
-├── P3_04_streak_length_distribution.png
-├── P3_05_cohort_retention_curve.png
-├── page1_overview.png
-└── page2_diagnostic.png
-
+    ├── P1_02a_countifs_formula.png
+    ├── P1_02b_countifs_summary.png
+    ├── P1_04_avg_tenure_by_category.png
+    ├── P1_06_pivot_citytier_churn.png
+    ├── P1_07_pivot_sipband_churn.png
+    ├── P2_Q1_streak_detection_result.png
+    ├── P2_Q2_rank_by_category_result.png
+    ├── P2_Q3_risk_quartile_result.png
+    ├── P2_Q4_running_reliability_result.png
+    ├── P2_Q5_early_warning_result.png
+    ├── P2_Q6_scheme_discontinuation_rank.png
+    ├── P2_Q7_tenure_deviation_result.png
+    ├── P2_Q8_cohort_retention_curve.png
+    ├── P3_01_churn_by_category_chart.png
+    ├── P3_01_churn_by_category_table.png
+    ├── P3_02_tenure_to_churn_histogram.png
+    ├── P3_03_ticket_size_vs_churn.png
+    ├── P3_04_streak_length_distribution.png
+    ├── P3_05_cohort_retention_curve.png
+    ├── page1_overview.png
+    └── page2_diagnostic.png
+```
 
 ---
 
