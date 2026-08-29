@@ -35,10 +35,8 @@ Key columns: `investor_id`, `month_date`, `scheme_code`, `scheme_name`, `sebi_ca
 ---
 
 ## Pipeline
+Excel → MySQL (8 advanced SQL queries) → Python EDA (5 charts) → Statistical Validation (3 hypothesis tests) → Power BI (2-page dashboard)
 
-```
-Excel  →  MySQL (8 advanced SQL queries)  →  Python EDA (5 charts)  →  Power BI (2-page dashboard)
-```
 
 ---
 
@@ -57,7 +55,7 @@ Pivot tables broke this down by category, city tier, and ticket size:
 ![Churn by city tier](screenshots/P1_06_pivot_citytier_churn.png)
 ![Churn by SIP ticket band](screenshots/P1_07_pivot_sipband_churn.png)
 
-Early finding: city tier showed no meaningful churn pattern (23.03% / 18.20% / 27.13%) — a useful null result, not a bug. File: `mf_sip_analysis_phase1.xlsx`
+Early finding: city tier showed no meaningful churn pattern (23.03% / 18.20% / 27.13%) — a useful null result, not a bug (later statistically confirmed in Phase 5). File: `mf_sip_analysis_phase1.xlsx`
 
 ---
 
@@ -120,6 +118,40 @@ File: `notebook/mf_sip_discontinuation_eda.ipynb`
 
 ---
 
+### Phase 5 — Statistical Validation: 3 Hypothesis Tests
+
+Environment: same Jupyter notebook as Phase 3, using `scipy.stats`. The goal of this phase is to confirm whether the visual patterns from Phase 3 are statistically real or could be due to chance — a critical distinction for any recommendation built on this data.
+
+**Test 1 — Category vs. Discontinuation (Chi-square test of independence)**
+
+- H0: SEBI category and discontinuation are independent
+- H1: SEBI category and discontinuation are NOT independent
+- **Result:** χ² = 189.38, df = 9, p < 0.0001 → **Reject H0.** Category is statistically significantly associated with discontinuation, confirming the pattern in Chart 1 is not due to chance.
+
+**Test 2 — SIP Ticket Size vs. Discontinuation (Independent samples t-test)**
+
+- H0: mean SIP amount is the same for discontinued and active investors
+- H1: mean SIP amount differs between the two groups
+- **Result:** mean SIP amount ₹2,357.95 (discontinued) vs. ₹2,791.67 (active); t = -2.31, p = 0.0212 → **Reject H0.** Lower ticket size is significantly associated with higher churn, though the effect is meaningfully weaker than the category effect above.
+
+**Test 3 — City Tier vs. Discontinuation (Chi-square test of independence)**
+
+- H0: city tier and discontinuation are independent
+- H1: city tier and discontinuation are NOT independent
+- **Result:** χ² = 2.99, df = 2, p = 0.2242 → **Fail to reject H0.** City tier shows no statistically significant association with discontinuation, confirming the earlier Phase 1 (Excel) null-result observation rather than just eyeballing similar-looking percentages.
+
+| Test | Variable | Result | p-value | Conclusion |
+|---|---|---|---|---|
+| 1 | SEBI Category | χ² = 189.38 | p < 0.0001 | Strong, significant driver |
+| 2 | SIP Ticket Size | t = -2.31 | p = 0.0212 | Weaker, still significant driver |
+| 3 | City Tier | χ² = 2.99 | p = 0.2242 | Not significant (confirmed null) |
+
+**Business takeaway:** Statistical testing confirms category is the dominant churn driver, ticket size is a real but secondary driver, and city tier can be safely excluded from retention targeting — turning three visual observations into three statistically validated business decisions.
+
+File: `notebook/mf_sip_discontinuation_eda.ipynb` (same notebook, Phase 5 section)
+
+---
+
 ### Phase 4 — Power BI: 2-Page Interactive Dashboard
 
 **Page 1 — Overview** (the "what")
@@ -147,10 +179,10 @@ Files: `dashboard/mf_analysis_dash.pbix` · [PDF version](dashboard/mf_analysis_
 ## Key Findings
 
 - **Investor-level churn rate: 40%** (264 of 660), independently confirmed via 3 separate SQL techniques (LAG, LEAD, cohort analysis)
-- **Category risk is highly uneven**: Small Cap Equity (93%), Mid Cap Equity (73%), and Flexi Cap Equity (67%) are the highest-risk categories; Liquid Fund (11%) and Debt – Short Duration (16%) are the most stable
-- **Smaller ticket size = higher churn**: investors on ≤₹1,000 SIPs churn at 51%, vs. 31% for >₹3,000 SIPs
+- **Category risk is highly uneven and statistically significant** (χ² = 189.38, p < 0.0001): Small Cap Equity (93%), Mid Cap Equity (73%), and Flexi Cap Equity (67%) are the highest-risk categories; Liquid Fund (11%) and Debt – Short Duration (16%) are the most stable
+- **Smaller ticket size = significantly higher churn** (t = -2.31, p = 0.0212): investors on ≤₹1,000 SIPs churn at 51%, vs. 31% for >₹3,000 SIPs — a real but weaker driver than category
 - **The 3-month threshold is a real behavioral cliff**, not an arbitrary rule — most churned investors lapse at exactly 3 consecutive misses
-- **City tier is not a churn driver** — a deliberate null result that prevented over-fitting a spurious pattern
+- **City tier is confirmed statistically to NOT be a churn driver** (χ² = 2.99, p = 0.2242) — a deliberate, statistically validated null result that prevented over-fitting a spurious pattern
 - **Risk quartiles are not perfectly monotonic**: the lowest-missed-payment quartile (Q4) still showed a 48.48% eventual discontinuation rate, higher than the two middle quartiles — missed-payment count alone doesn't fully predict churn
 - **Scheme-level churn varies sharply within the same category** (Q6) — e.g. Midcap Advantage Fund churns at 71% while other schemes in the same category churn far less, meaning category-level fixes alone would miss scheme-specific problems
 
@@ -158,11 +190,11 @@ Files: `dashboard/mf_analysis_dash.pbix` · [PDF version](dashboard/mf_analysis_
 
 ## Business Recommendations
 
-1. **Prioritize retention outreach by category, not uniformly.** Small Cap, Mid Cap, and Flexi Cap Equity investors account for a disproportionate share of churn — concentrate retention budget here first rather than spreading it evenly across all 10 categories.
+1. **Prioritize retention outreach by category, not uniformly.** Small Cap, Mid Cap, and Flexi Cap Equity investors account for a disproportionate share of churn — concentrate retention budget here first rather than spreading it evenly across all 10 categories. This is the strongest statistically validated lever (Phase 5, Test 1).
 
 2. **Intervene at the first missed payment, not the third.** Q5 shows only 6.58% of single misses become a confirmed 3-month streak — but once a streak starts, the fatal-streak-length analysis shows it almost always ends at exactly 3 months. This means the highest-leverage intervention point is the **first missed payment**, not waiting for the pattern to confirm itself.
 
-3. **Encourage step-up SIPs or minimum ticket nudges.** Low-ticket investors (≤₹1,000) churn at nearly double the rate of high-ticket investors. A step-up SIP feature or a modest minimum-ticket recommendation at onboarding could measurably reduce this segment's churn.
+3. **Encourage step-up SIPs or minimum ticket nudges.** Low-ticket investors (≤₹1,000) churn at nearly double the rate of high-ticket investors, a statistically confirmed (if secondary) effect. A step-up SIP feature or a modest minimum-ticket recommendation at onboarding could measurably reduce this segment's churn.
 
 4. **Investigate underperforming schemes individually, not just their category.** Q6 shows churn varies sharply *within* the same SEBI category — e.g., Midcap Advantage Fund churns far more than category peers. Fund managers should review fees, performance, and communication for these specific schemes rather than assuming category-wide fixes will help.
 
@@ -170,58 +202,59 @@ Files: `dashboard/mf_analysis_dash.pbix` · [PDF version](dashboard/mf_analysis_
 
 6. **Don't rely on missed-payment count alone for risk scoring.** The non-monotonic quartile result (Q3) shows churn risk needs to combine missed-payment count with ticket size and category — a multi-factor risk score would outperform any single signal.
 
+7. **Deprioritize city-tier-based segmentation.** Phase 5 statistically confirms city tier has no significant relationship with churn (p = 0.2242) — retention budget should not be allocated by geography.
+
 ---
 
 ## Business Solution
 
-The deliverable is a **two-page, self-service Power BI dashboard** that lets a retention or operations team — without needing SQL or Python skills — monitor the overall churn picture (Page 1) and drill into the specific drivers behind it (Page 2). This turns a one-time analysis into a repeatable, filterable tool: a retention manager can filter to a single cohort month, category, or city tier and immediately see which investor segment needs outreach this month, rather than waiting on an analyst to rerun a report.
+The deliverable is a **two-page, self-service Power BI dashboard** that lets a retention or operations team — without needing SQL or Python skills — monitor the overall churn picture (Page 1) and drill into the specific drivers behind it (Page 2). This turns a one-time analysis into a repeatable, filterable tool: a retention manager can filter to a single cohort month, category, or city tier and immediately see which investor segment needs outreach this month, rather than waiting on an analyst to rerun a report. The underlying recommendations are additionally backed by formal hypothesis testing (Phase 5), so the tool isn't just descriptive — its top-line guidance is statistically validated.
 
 ---
 
 ## Tech Stack
 
-Excel · MySQL · Python (Pandas, Matplotlib, SQLAlchemy) · Power BI (DAX, Power Query)
+Excel · MySQL · Python (Pandas, Matplotlib, SciPy, SQLAlchemy) · Power BI (DAX, Power Query)
 
 ---
 
 ## Repository Structure
 
-```
 mf-sip-discontinuation-analysis/
 ├── README.md
 ├── sql/
-│   └── mf_sip_analysis.sql            (8 queries, Q1–Q8)
+│ └── mf_sip_analysis.sql (8 queries, Q1–Q8)
 ├── notebook/
-│   └── mf_sip_discontinuation_eda.ipynb
+│ └── mf_sip_discontinuation_eda.ipynb (EDA + Phase 5 statistical validation)
 ├── data/
-│   ├── mf_sip_discontinuation.csv     (raw)
-│   └── mf_sip_clean_v2.csv            (cleaned)
+│ ├── mf_sip_discontinuation.csv (raw)
+│ └── mf_sip_clean_v2.csv (cleaned)
 ├── dashboard/
-│   ├── mf_analysis_dash.pbix
-│   └── mf_analysis_dash_pdf.pdf
+│ ├── mf_analysis_dash.pbix
+│ └── mf_analysis_dash_pdf.pdf
 └── screenshots/
-    ├── P1_02a_countifs_formula.png
-    ├── P1_02b_countifs_summary.png
-    ├── P1_04_avg_tenure_by_category.png
-    ├── P1_06_pivot_citytier_churn.png
-    ├── P1_07_pivot_sipband_churn.png
-    ├── P2_Q1_streak_detection_result.png
-    ├── P2_Q2_rank_by_category_result.png
-    ├── P2_Q3_risk_quartile_result.png
-    ├── P2_Q4_running_reliability_result.png
-    ├── P2_Q5_early_warning_result.png
-    ├── P2_Q6_scheme_discontinuation_rank.png
-    ├── P2_Q7_tenure_deviation_result.png
-    ├── P2_Q8_cohort_retention_curve.png
-    ├── P3_01_churn_by_category_chart.png
-    ├── P3_01_churn_by_category_table.png
-    ├── P3_02_tenure_to_churn_histogram.png
-    ├── P3_03_ticket_size_vs_churn.png
-    ├── P3_04_streak_length_distribution.png
-    ├── P3_05_cohort_retention_curve.png
-    ├── page1_overview.png
-    └── page2_diagnostic.png
-```
+├── P1_02a_countifs_formula.png
+├── P1_02b_countifs_summary.png
+├── P1_04_avg_tenure_by_category.png
+├── P1_06_pivot_citytier_churn.png
+├── P1_07_pivot_sipband_churn.png
+├── P2_Q1_streak_detection_result.png
+├── P2_Q2_rank_by_category_result.png
+├── P2_Q3_risk_quartile_result.png
+├── P2_Q4_running_reliability_result.png
+├── P2_Q5_early_warning_result.png
+├── P2_Q6_scheme_discontinuation_rank.png
+├── P2_Q7_tenure_deviation_result.png
+├── P2_Q8_cohort_retention_curve.png
+├── P3_01_churn_by_category_chart.png
+├── P3_01_churn_by_category_table.png
+├── P3_02_tenure_to_churn_histogram.png
+├── P3_03_ticket_size_vs_churn.png
+├── P3_04_streak_length_distribution.png
+├── P3_05_cohort_retention_curve.png
+├── page1_overview.png
+└── page2_diagnostic.png
+
 
 ---
 
@@ -230,11 +263,12 @@ mf-sip-discontinuation-analysis/
 - Dataset is synthetically generated; directional findings (ticket size, category risk) are illustrative of real-world SIP behavior but not derived from actual AMC data
 - The dashboard uses a filtered detail table rather than true Power BI drill-through, due to time constraints
 - The cohort retention matrix on Page 2 is binned at a coarser interval (every ~12 months) rather than true month-by-month granularity
-- Next iteration: replace the synthetic panel with real AMFI NAV/AUM data where investor-level granularity becomes available, and add a predictive churn-scoring model combining tenure, ticket size, category, and missed-payment streaks
+- Statistical tests (Phase 5) assume independence of observations at the investor level; no correction for multiple comparisons was applied since only 3 tests were run
+- Next iteration: replace the synthetic panel with real AMFI NAV/AUM data where investor-level granularity becomes available, and add a predictive churn-scoring model (e.g. logistic regression) combining tenure, ticket size, category, and missed-payment streaks
 
 ---
 
 ## Author
 
 Shivam Gupta
-[LinkedIn](https://www.linkedin.com/in/shivam-gupta-ab453a237) · [GitHub](https://github.com/shivamconnect321-bot)
+[LinkedIn](https://www.linkedin.com/in/shivam-gupta-ab453a237) · [GitHub](https://github.com/shivamg-03)
