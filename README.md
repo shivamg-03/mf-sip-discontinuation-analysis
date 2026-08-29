@@ -120,6 +120,30 @@ File: `notebook/mf_sip_discontinuation_eda.ipynb`
 
 ---
 
+### Phase 4 — Power BI: 2-Page Interactive Dashboard
+
+**Page 1 — Overview** (the "what")
+
+![Dashboard Page 1 - Overview](screenshots/page1_overview.png)
+
+- KPI cards: Total Investors (660), Churned Investors (264), Investor Churn Rate (40.00%), Active Investors (396)
+- Monthly SIP volume trend (active vs. discontinued)
+- Donut: churned investors by SEBI category
+- Bar chart: churned investors by scheme
+
+**Page 2 — Diagnostic** (the "why")
+
+![Dashboard Page 2 - Diagnostic](screenshots/page2_diagnostic.png)
+
+- Slicers: cohort month, city tier, SEBI category
+- Scatter: tenure vs. ticket size, colored by churn status
+- Cohort retention matrix (conditional-formatted heatmap)
+- Investor-level detail table
+
+Files: `dashboard/mf_analysis_dash.pbix` · [PDF version](dashboard/mf_analysis_dash_pdf.pdf) (view without Power BI installed)
+
+---
+
 ### Phase 5 — Statistical Validation: 3 Hypothesis Tests
 
 Environment: same Jupyter notebook as Phase 3, using `scipy.stats`. The goal of this phase is to confirm whether the visual patterns from Phase 3 are statistically real or could be due to chance — a critical distinction for any recommendation built on this data.
@@ -151,30 +175,6 @@ Environment: same Jupyter notebook as Phase 3, using `scipy.stats`. The goal of 
 **Business takeaway:** Statistical testing confirms category is the dominant churn driver, ticket size is a real but secondary driver, and city tier can be safely excluded from retention targeting — turning three visual observations into three statistically validated business decisions.
 
 File: `notebook/mf_sip_discontinuation_eda.ipynb` (same notebook, Phase 5 section)
-
----
-
-### Phase 4 — Power BI: 2-Page Interactive Dashboard
-
-**Page 1 — Overview** (the "what")
-
-![Dashboard Page 1 - Overview](screenshots/page1_overview.png)
-
-- KPI cards: Total Investors (660), Churned Investors (264), Investor Churn Rate (40.00%), Active Investors (396)
-- Monthly SIP volume trend (active vs. discontinued)
-- Donut: churned investors by SEBI category
-- Bar chart: churned investors by scheme
-
-**Page 2 — Diagnostic** (the "why")
-
-![Dashboard Page 2 - Diagnostic](screenshots/page2_diagnostic.png)
-
-- Slicers: cohort month, city tier, SEBI category
-- Scatter: tenure vs. ticket size, colored by churn status
-- Cohort retention matrix (conditional-formatted heatmap)
-- Investor-level detail table
-
-Files: `dashboard/mf_analysis_dash.pbix` · [PDF version](dashboard/mf_analysis_dash_pdf.pdf) (view without Power BI installed)
 
 ---
 
